@@ -1,0 +1,15 @@
+{
+    "TableName": "QCSummary",
+    "KeySchema": [
+      { "AttributeName": "GroupID", "KeyType": "HASH" },
+      { "AttributeName": "StartTime", "KeyType": "RANGE" }
+    ],
+    "AttributeDefinitions": [
+        { "AttributeName": "GroupID", "AttributeType": "S" },
+        { "AttributeName": "StartTime", "AttributeType": "S" }
+    ],
+    "ProvisionedThroughput": {
+      "ReadCapacityUnits": 5,
+      "WriteCapacityUnits": 5
+    }
+}

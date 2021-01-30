@@ -1,0 +1,15 @@
+{
+    "TableName": "QCDetails",
+    "KeySchema": [
+      { "AttributeName": "QCPID", "KeyType": "HASH" },
+      { "AttributeName": "ErrorNumber", "KeyType": "RANGE" }
+    ],
+    "AttributeDefinitions": [
+        { "AttributeName": "QCPID", "AttributeType": "S" },
+        { "AttributeName": "ErrorNumber", "AttributeType": "N" }
+    ],
+    "ProvisionedThroughput": {
+      "ReadCapacityUnits": 5,
+      "WriteCapacityUnits": 5
+    }
+}
