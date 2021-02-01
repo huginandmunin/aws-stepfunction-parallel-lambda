@@ -1,0 +1,62 @@
+{
+    "Comment": "Demo a step function for QC parallel processing using lambda functions",
+    "StartAt": "Start QC",
+    "States": {
+      "Start QC": {
+        "Comment": "The start-qc function seeds a new row in the QC Summary table.",
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:MY-REGION:MY-ACCOUNT-ID:function:start-qc",
+        "Next": "Parallel Processing"
+      },
+
+      "Parallel Processing": {
+        "Comment": "The Parallel state invokes 3 lambda functions in parallel.",
+        "Type": "Parallel",
+        "Next": "End QC Processing",
+        "Branches": [
+          {
+            "StartAt": "QC Process 1",
+            "States": {
+              "QC Process 1": {
+                "Type": "Task",
+                "Resource": "arn:aws:lambda:MY-REGION:MY-ACCOUNT-ID:function:qc-process1",
+                "End": true
+              }
+            }
+          },
+          {
+            "StartAt": "QC Process 2",
+            "States": {
+              "QC Process 2": {
+                "Type": "Task",
+                "Resource": "arn:aws:lambda:MY-REGION:MY-ACCOUNT-ID:function:qc-process2",
+                "End": true
+              }
+            }
+          },
+          {
+            "StartAt": "QC Process 3",
+            "States": {
+              "QC Process 3": {
+                "Type": "Task",
+                "Resource": "arn:aws:lambda:MY-REGION:MY-ACCOUNT-ID:function:qc-process3",
+                "End": true
+              }
+            }
+          }
+        ]
+      },
+      "End QC Processing": {
+        "Comment": "Read the row in the summary table and check if stream passes all processes.",
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:MY-REGION:MY-ACCOUNT-ID:function:end-qc",
+        "Next": "Send Summary"
+      },
+      "Send Summary": {
+        "Comment": "Send a pass/fail message to an SNS topic.",
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:MY-REGION:MY-ACCOUNT-ID:function:send-qc-summary",
+        "End": true
+      }
+    }
+}

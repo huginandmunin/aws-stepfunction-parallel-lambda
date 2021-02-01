@@ -1,0 +1,19 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "lambda:InvokeFunction"
+            ],
+            "Resource": [
+                "arn:aws:lambda:MY-REGION:MY-ACCOUNT-ID:function:start-qc",
+                "arn:aws:lambda:MY-REGION:MY-ACCOUNT-ID:function:qc-process1",
+                "arn:aws:lambda:MY-REGION:MY-ACCOUNT-ID:function:qc-process2",
+                "arn:aws:lambda:MY-REGION:MY-ACCOUNT-ID:function:qc-process3",
+                "arn:aws:lambda:MY-REGION:MY-ACCOUNT-ID:function:end-qc",
+                "arn:aws:lambda:MY-REGION:MY-ACCOUNT-ID:function:send-qc-summary"
+            ]
+        }
+    ]
+}
