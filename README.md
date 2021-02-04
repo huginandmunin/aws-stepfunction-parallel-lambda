@@ -52,7 +52,7 @@ Notice that each step defines it's type as pass:
 
 The means that each step will simply pass through without any functionality. 
 
-In the Step Function console, select ```Create state machine```. Leave the defaults of ```Author with code snippets``` and Type = ```Standard```. Remove the text from the JSON box. Paste the contents of the ```step-function-template-v1.json``` file into the json editor. Click on ```Next```.
+In the Step Function console, select ```Create state machine```. Leave the defaults of ```Author with code snippets``` and Type = ```Standard```. Remove the default text from the json editor box. Paste the contents of the ```step-function-template-v1.json``` file into the json editor. Click on ```Next```.
 
 Enter a name for the state machine, such as ```QCProcess```. Leave the default of ```Create new role```. Click on ```Create state machine```.
 
@@ -131,7 +131,7 @@ The only script that needs updating is the ```send-qc-summary.py```. You should 
 ```
 TOPIC_ARN = 'arn:aws:sns:MY-REGION:MY-ACCOUNT-ID:qc-results-group1'
 ```
-updating MY-REGION and MY-ACCOUBT-ID as needed. 
+updating MY-REGION and MY-ACCOUNT-ID as needed. 
 
 You might want to test the functions locally from the command line before deploying. Let's start with the ```start-qc.py``` script,
 
