@@ -177,7 +177,7 @@ In this version, the type ```Pass``` has been replaced with ```Task```. We also 
 
 You should edit this production version of the template to put in your region and account id. With this edit we are specifying the ARN for each lambda function that was created in the lambda console. Notice that each step is invoking a different lambda function.
 
-We can now edit the state machine template in the StepFunction console. Paste in this new version of the json. Save the new version. The console should give you an option for creating a new IAM role for the StepFunction. Select ```Create new role```. This should create a new role with invoke permission on the lambdas that have been added to the template. 
+We can now edit the state machine template in the StepFunction console. Select your state machine in the console and select ```Edit```. Paste in the production version into the json editor. Save the new version. The console should give you an option for creating a new IAM role for the StepFunction. Select ```Create new role```. This should create a new role with invoke permission on the lambdas that have been added to the template. 
 
 If you get any permission errors on invoking lambda then review the policy for the IAM role for the state machine. In addition to X-ray permissions, it should have permissions to invoke each lambda, as shown in the file ```step-function-invoke-lambda-policy.json```.
 
