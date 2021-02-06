@@ -120,13 +120,15 @@ We're only going to use this one topic for the demo. In production you might hav
 
 The lambda functions will need permission to interact with DynamoDB and to send messages to SNS. This can be granted by an IAM lambda role. 
 
-If you do not already have a lambda role, then one can be created in the in the IAM console. After creating the role, you can go to Permissions and add the AWS Managed policies for DynamoDB and SNS. 
+If you do not already have a lambda role, then one can be created in the in the IAM console. After creating the role, you can go to Permissions and add the AWS Managed policies for lambda-execute (AWSLambdaExecute), DynamoDB (AmazonDynamoDBFullAccess) and SNS (AmazonSNSFullAccess).
 
-### 5. Create lambda functions
+This single role is okay for the demo. A better approach for a production implementation would be 1 role with DynamoDB access and another role with only SNS access. 
+
+### 5. Create the lambda functions
 
 The code for the lambda functions are in the python scripts in the demo project. 
 
-The only script that needs updating is the ```send-qc-summary.py```. You should update the assignment of the TOPIC_ARN to use the ARN of the SNS topic that you created,
+The only script that needs updating is the ```send-qc-summary.py```. You should update the value of the TOPIC_ARN to use the ARN of the SNS topic that you created,
 
 ```
 TOPIC_ARN = 'arn:aws:sns:MY-REGION:MY-ACCOUNT-ID:qc-results-group1'
@@ -143,11 +145,20 @@ This will read a GroupID and StreamID from the test payload and put an item in t
 
 The rest of the lambda functions will use this StartTime as a sort key for reading and updating the table. For additional local testing, you should update the StartTime in the test payloads in the ```test_payloads``` directory. The StartTime should match the StartTime for the item that you just created in the QC Summary table. 
 
-As you test the scripts in succession you should see updates to the item in the QCSummary table. 
+As you test the scripts in succession you should see updates to the item in the QCSummary table.
 
-Lets deploy these functions via the lambda console. You should be in the same region as your DynamoDB table and the StepFunction. For each script, create a new function. Select a python run time, such as 3.7. Paste in the python code into the text editor. For the IAM role, select the lambda role that you created earlier. The functions for the parallel steps (```qc-process1```, ```qc-process2```, ```qc-process3```) should have the timeout adjusted to 1 minute. Each function can be tested using input from the json files in the test_payloads directory (ie, the same inputs that you used to test locally). 
+The testing order should match the order that the functions are called from the StepFunction:
 
-All of the testing verifies that the lambda functions interact successfully with DynamoDB and SNS. Don't forget to check your email for those QC summary messages!
+1. start-qc
+2. qc-process1
+3. qc-process2
+4. qc-process3
+5. end-qc
+6. send-qc-summary
+
+Lets deploy these functions via the lambda console. You should be in the same region as your DynamoDB table and the StepFunction. For each script, create a new function. Select a python run time, such as 3.7. Paste in the python code into the code text editor. For the IAM role, select the lambda role that you created earlier. The functions for the parallel steps (```qc-process1```, ```qc-process2```, ```qc-process3```) should have the timeout adjusted to 1 minute. Each function can be tested in the console using input from the json files in the test_payloads directory (ie, the same inputs that you used to test locally). 
+
+The testing verifies that the lambda functions interact successfully with DynamoDB and SNS. Don't forget to check your email for those QC summary messages!
 
 The later functions, ```end-qc``` and ```send-qc-summary```, have options of reading information from the DynamoDB table or from previous steps in the StepFunction. Choosing the StepFunction option results in fewer calls to the database table. 
 
@@ -170,7 +181,7 @@ We can now edit the state machine template in the StepFunction console. Paste in
 
 If you get any permission errors on invoking lambda then review the policy for the IAM role for the state machine. In addition to X-ray permissions, it should have permissions to invoke each lambda, as shown in the file ```step-function-invoke-lambda-policy.json```.
 
-Let's try and execute the StepFunction! For the input you will need some json with a value for a GroupID and StreamID. You could use the test payload for the start-qc code:
+Time for the real test: let's try and execute the StepFunction! For the input you will need some json with a value for a GroupID and StreamID. You could use the test payload for the start-qc code:
 
 ```
 {
@@ -183,7 +194,7 @@ Maybe change the values of the GroupID and StreamID to distinguish them from the
 
 The StepFunction console should display the completion of the various steps. The parallel step ```qc-process2``` should take longer than the other parallel processes. (It has a larger value in the sleep function.) You will see that all 3 parallel processes have to finish before starting the following step, ```end-qc```.  
 
-The QC Summary table should be showing a new item for every time that the state machine is executed. 
+The QC Summary table should be showing a new item for every time that the state machine is executed. Don't forget to check your email for those QC summary messages that are now triggered from the step function!
 
 
 ## Future work
