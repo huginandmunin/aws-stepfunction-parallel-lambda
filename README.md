@@ -21,6 +21,10 @@ There is also a lambda function for sending a summary message to an SNS topic.
 The implementation was based on this AWS tutorial:
 https://docs.aws.amazon.com/step-functions/latest/dg/tutorial-creating-lambda-state-machine.html
 
+Here is the workflow:
+
+![workflow graphic](https://github.com/huginandmunin/aws-stepfunction-parallel-lambda/blob/master/stepfunctions_graph.png?raw=true)
+
 ## Implementation
 
 The step function will receive as input a group-id and a stream-id which identifies the data to process. For the demo we are simply going to flag the data as passing each QC process. 
