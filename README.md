@@ -196,9 +196,17 @@ The StepFunction console should display the completion of the various steps. The
 
 The QC Summary table should be showing a new item for every time that the state machine is executed. Don't forget to check your email for those QC summary messages that are now triggered from the step function!
 
+## Payload pass through
+
+This demo utilizes StepFunction input and output as a means of passing information to the lambda functions. The output of each lambda is passed on to the following lambda. 
+
+The initial input is the GroupID and StreamID. The first function adds the StartTime and QC process id. The parallel steps add a pass/fail flag for each parallel process. The ```end-qc``` functions received a list of the outputs of the 3 parallel steps. It then adds a total pass/fail flag to the payload for the summary sending function. 
+
+For the demo we also utilize a DynamoDB table for storing the summary information of the QC processing run. The DynamoDB table isn't totally required for the project - it is an example of how the processing history can be archived. 
 
 ## Future work
 
 1. Handle errors in the StepFunction input (eg, missing GroupID and StreamID)
 2. Create an API gateway for the StepFunction
-3. Create a CloudFormation template for the demo project. 
+3. Create a CloudFormation template for the demo project.
+4. Develop unit tests for the lambda functions. 
