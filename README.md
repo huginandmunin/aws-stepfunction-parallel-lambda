@@ -122,7 +122,7 @@ The lambda functions will need permission to interact with DynamoDB and to send 
 
 If you do not already have a lambda role, then one can be created in the in the IAM console. After creating the role, you can go to Permissions and add the AWS Managed policies for lambda-execute (AWSLambdaExecute), DynamoDB (AmazonDynamoDBFullAccess) and SNS (AmazonSNSFullAccess).
 
-This single role is okay for the demo. A better approach for a production implementation would be 1 role with DynamoDB access and another role with only SNS access. 
+This single role is okay for the demo. A better approach for a production implementation would be 1 role with execute/DynamoDB permissions and another role with only execute/SNS permissions. 
 
 ### 5. Create the lambda functions
 
@@ -200,7 +200,7 @@ The QC Summary table should be showing a new item for every time that the state 
 
 This demo utilizes StepFunction input and output as a means of passing information to the lambda functions. The output of each lambda is passed on to the following lambda. 
 
-The initial input is the GroupID and StreamID. The first function adds the StartTime and QC process id. The parallel steps add a pass/fail flag for each parallel process. The ```end-qc``` functions received a list of the outputs of the 3 parallel steps. It then adds a total pass/fail flag to the payload for the summary sending function. 
+The initial input is the GroupID and StreamID. The first function adds the StartTime and QC process id. The parallel steps add a pass/fail flag for each parallel process. The ```end-qc``` function received a list of the outputs of the 3 parallel steps. It then adds a total pass/fail flag to the payload for the summary sending function. 
 
 For the demo we also utilize a DynamoDB table for storing the summary information of the QC processing run. The DynamoDB table isn't totally required for the project - it is an example of how the processing history can be archived. 
 
