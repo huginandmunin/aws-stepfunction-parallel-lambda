@@ -12,7 +12,7 @@
       "Parallel Processing": {
         "Comment": "The Parallel state invokes 3 lambda functions in parallel.",
         "Type": "Parallel",
-        "Next": "End QC Processing",
+        "Next": "Wait State",
         "Branches": [
           {
             "StartAt": "QC Process 1",
@@ -46,6 +46,12 @@
           }
         ]
       },
+      "Wait State": {
+        "Comment": "Allow time for eventual consistency in DynamoDB table.",
+        "Type": "Wait",
+        "Seconds": 2,
+        "Next": "End QC Processing"
+      },
       "End QC Processing": {
         "Comment": "Read the row in the summary table and check if stream passes all processes.",
         "Type": "Task",
@@ -55,7 +61,17 @@
       "Send Summary": {
         "Comment": "Send a pass/fail message to an SNS topic.",
         "Type": "Task",
-        "Resource": "arn:aws:lambda:MY-REGION:MY-ACCOUNT-ID:function:send-qc-summary",
+        "Resource": "arn:aws:states:::sns:publish",
+        "Parameters": {
+          "TopicArn": "arn:aws:sns:MY-REGION:MY-ACCOUNT-ID:qc-results-group1",
+          "Message": {
+            "GroupID.$": "$.GroupID",
+            "StreamID.$": "$.StreamID",
+            "TotalPass.$": "$.TotalPass",
+            "StartTime.$": "$.StartTime",
+            "QCPID.$": "$.QCPID"
+          }
+        },
         "End": true
       }
     }

@@ -1,4 +1,4 @@
 {
-    "GroupID": "Group A",
-    "StreamID": "Stream 1"
-  }
+    "GroupID": "group:1",
+    "StreamID": "stream:aa123"
+}

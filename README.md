@@ -14,9 +14,9 @@ The data could come from entities with several data streams. Examples are vendor
 ## Solution
 
 We will implement a StepFunction state machine to orchestrate the workflow. 
-Each step in the workflow will invoke a lambda function. 
-One lambda function will create a new item for a QC Summary table in DynamoDB. Other lambda functions will update this new item. 
-There is also a lambda function for sending a summary message to an SNS topic. 
+Most steps in the workflow will invoke a lambda function. 
+One lambda function will generate table keys and will create a new item for a QC Summary table in DynamoDB. Other lambda functions will update this new item. 
+The last step, which sends a message to SNS, can be done directly from the state machine without invoking lambda. 
 
 The implementation was based on this AWS tutorial:
 https://docs.aws.amazon.com/step-functions/latest/dg/tutorial-creating-lambda-state-machine.html
@@ -34,9 +34,10 @@ The implementation models the following steps.
 1. Seed a QC summary row for the group/stream in a DynamoDB table. 
 2. Get the stream data for the group (not implemented in the demo).
 3. Pass the data to the 3 parallel qc processes.
-4. Each QC process will mark a pass/fail attribute in the DynamoDB summary table. They could also store QC messages in a QC details table (not implemented in the demo). 
-5. After the 3 parallel scripts are finished, a collector script will check if the data passes all 3 of the parallel steps. It will update a total-pass/fail attribute in the summary table. The total-pass is also sent to the summary-sender script. 
-6. A sender script will send summary pass/fail results to a SNS topic. 
+4. Each QC process will mark a pass/fail attribute in the DynamoDB summary table. They could also store QC messages in a QC details table (not implemented in the demo).
+5. Execute a wait step to allow for eventual consistency in DynamoDB.
+6. A collector script will check if the data passes all 3 of the parallel steps. It will update a total-pass/fail attribute in the summary table. The total-pass is also sent to the summary-sender script. 
+7. A sender script will send summary pass/fail results to a SNS topic. 
 
 ## Steps to build the demo
 
@@ -118,7 +119,7 @@ aws sns publish --topic-arn arn:aws:sns:MY-REGION:MY-ACCOUNT-ID:qc-results-group
 ```
 The message should appear in your email. 
 
-We're only going to use this one topic for the demo. In production you might have a topic for each GroupID. 
+We're only going to generate this one topic for the demo. In production you might have a topic for each GroupID. 
 
 ### 4. Create IAM roles for the lambda functions
 
@@ -158,13 +159,14 @@ The testing order should match the order that the functions are called from the 
 3. qc-process2
 4. qc-process3
 5. end-qc
-6. send-qc-summary
 
 Lets deploy these functions via the lambda console. You should be in the same region as your DynamoDB table and the StepFunction. For each script, create a new function. Select a python run time, such as 3.7. Paste in the python code into the code text editor. For the IAM role, select the lambda role that you created earlier. The functions for the parallel steps (```qc-process1```, ```qc-process2```, ```qc-process3```) should have the timeout adjusted to 1 minute. Each function can be tested in the console using input from the json files in the test_payloads directory (ie, the same inputs that you used to test locally). 
 
 The testing verifies that the lambda functions interact successfully with DynamoDB and SNS. Don't forget to check your email for those QC summary messages!
 
-The later functions, ```end-qc``` and ```send-qc-summary```, have options of reading information from the DynamoDB table or from previous steps in the StepFunction. Choosing the StepFunction option results in fewer calls to the database table. 
+The collector function, ```end-qc```, has options of reading information from the DynamoDB table or from the output of the previous steps in the StepFunction. Choosing the StepFunction option results in fewer calls to the database table. Both options are presented in the code for comparison.
+
+The SNS sender step, ```send-qc-summary```, is handled directly in the state machine. It grabs information from the StepFunction input payload and sends this as the message payload to SNS. You could also use a lambda function if you needed to reformat the output.  
 
 ### 6. Invoke lambda functions from the state machine
 
@@ -189,8 +191,8 @@ Time for the real test: let's try and execute the StepFunction! For the input yo
 
 ```
 {
-    "GroupID": "group1",
-    "StreamID": "streamA"
+    "GroupID": "group:1",
+    "StreamID": "stream:aa123"
 }
 ```
 
