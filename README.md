@@ -164,7 +164,7 @@ Lets deploy these functions via the lambda console. You should be in the same re
 
 The testing verifies that the lambda functions interact successfully with DynamoDB and SNS. Don't forget to check your email for those QC summary messages!
 
-The collector function, ```end-qc```, has options of reading information from the DynamoDB table or from the output of the previous steps in the StepFunction. Choosing the StepFunction option results in fewer calls to the database table. Both options are presented in the code for comparison.
+The collector function, ```end-qc```, has options of reading information from the DynamoDB table or from the output of the previous steps in the StepFunction. Choosing the StepFunction option results in fewer calls to the database table and the ```Wait Step``` could be removed from the state machine. Both options are presented in the code for comparison.
 
 The SNS sender step, ```send-qc-summary```, is handled directly in the state machine. It grabs information from the StepFunction input payload and sends this as the message payload to SNS. You could also use a lambda function if you needed to reformat the output.  
 
